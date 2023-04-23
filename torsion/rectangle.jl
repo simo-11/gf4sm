@@ -1,3 +1,4 @@
+module Rectangle
 using Gridap
 using LinearAlgebra
 const E = 3.0e10 # Pa
@@ -32,7 +33,7 @@ function new_state(r_in,d_in,e_in)
     damaged, r_out, d_out
   end
 
-  function σ(e_in,r_in,d_in)
+  function sigma(e_in,r_in,d_in)
     _, _, d_out = new_state(r_in,d_in,e_in)
     (1-d_out)*sigma_e(e_in)
   end
@@ -81,8 +82,8 @@ function new_state(r_in,d_in,e_in)
     solver = FESolver(nls)
     function step(uh_in,factor,cache)
       b = factor*b_max
-      res(u,v) = ∫(  ε(v) ⊙ (σ∘(ε(u),r,d))  - v⋅b )*d_omega
-      jac(u,du,v) = ∫(  ε(v) ⊙ (dσ∘(ε(du),ε(u),new_state∘(r,d,ε(u))))  )*d_omega
+      res(u,v) = ∫(  ε(v) ⊙ (sigma∘(ε(u),r,d))  - v⋅b )*d_omega
+      jac(u,du,v) = ∫(  ε(v) ⊙ (d_sigma∘(ε(du),ε(u),new_state∘(r,d,ε(u))))  )*d_omega
       op = FEOperator(res,jac,U,V)
       uh_out, cache = solve!(uh_in,solver,op,cache)
       update_state!(new_state,r,d,ε(uh_out))
@@ -102,3 +103,4 @@ function new_state(r_in,d_in,e_in)
                     "threshold"=>rh,"sigma_elast"=>sigma_e∘ε(uh)])
     end
   end
+end
