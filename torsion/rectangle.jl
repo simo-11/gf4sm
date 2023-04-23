@@ -98,7 +98,7 @@ function new_state(r_in,d_in,e_in)
       dh = project(d,model,d_omega,order)
       rh = project(r,model,d_omega,order)
       writevtk(
-        omega,"results_$(lpad(istep,3,'0'))",
+        omega,"../paraview/torsion_$(lpad(istep,3,'0'))",
         cellfields=["uh"=>uh,"epsi"=>ε(uh),"damage"=>dh,
                     "threshold"=>rh,"sigma_elast"=>sigma_e∘ε(uh)])
     end
