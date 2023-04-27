@@ -60,18 +60,23 @@ function new_state(r_in,d_in,e_in)
     qh
   end
 
-  function main(;n,nsteps)
-    r = 12
+  function main(;r,n,nsteps)
     domain = (0,r,0,1,0,1)
     partition = (r*n,n,n)
     model = CartesianDiscreteModel(domain,partition)
     labeling = get_face_labeling(model)
-    add_tag_from_tags!(labeling,"supportA",[1,3,5,7,13,15,17,19,25])
-    add_tag_from_tags!(labeling,"supportB",[2,4,6,8,14,16,18,20,26])
-    add_tag_from_tags!(labeling,"supports",["supportA","supportB"])
+    # entities at lower x values
+    # 1,3,5,7 are corners
+    # 13,15,17,19 edges (excluding corners)
+    # 25 is center area (excluding corners and edges)
+    x0c=range(start=1,step=2,length=4)
+    x0e=range(start=13,step=2,length=4)
+    x0f=25
+    fixed=vcat(x0c,x0e,x0f) 
+    add_tag_from_tags!(labeling,"fixed",fixed)
     order = 1
     reffe = ReferenceFE(lagrangian,VectorValue{3,Float64},order)
-    V = TestFESpace(model,reffe,labels=labeling,dirichlet_tags=["supports"])
+    V = TestFESpace(model,reffe,labels=labeling,dirichlet_tags=["fixed"])
     U = TrialFESpace(V)
     degree = 2*order
     omega = Triangulation(model)
