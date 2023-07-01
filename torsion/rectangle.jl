@@ -48,8 +48,6 @@ function new_state(r_in,d_in,e_in)
     end
   end
 
-  const b_max = VectorValue(0.0,0.0,-(9.81*2.5e3))
-
   function project(q,model,d_omega,order)
     reffe = ReferenceFE(lagrangian,Float64,order)
     V = FESpace(model,reffe,conformity=:L2)
@@ -60,7 +58,7 @@ function new_state(r_in,d_in,e_in)
     qh
   end
 
-  function main(;r,n,nsteps)
+  function main(;r,n,nsteps,order,load)
     domain = (0,r,0,1,0,1)
     partition = (r*n,n,n)
     model = CartesianDiscreteModel(domain,partition)
@@ -74,7 +72,6 @@ function new_state(r_in,d_in,e_in)
     x0f=25
     fixed=vcat(x0c,x0e,x0f) 
     add_tag_from_tags!(labeling,"fixed",fixed)
-    order = 1
     reffe = ReferenceFE(lagrangian,VectorValue{3,Float64},order)
     V = TestFESpace(model,reffe,labels=labeling,dirichlet_tags=["fixed"])
     U = TrialFESpace(V)
@@ -85,7 +82,7 @@ function new_state(r_in,d_in,e_in)
     d = CellState(0.0,d_omega)
     nls = NLSolver(show_trace=true, method=:newton)
     solver = FESolver(nls)
-    function step(uh_in,factor,cache)
+    function step(uh_in,factor,cache,b_max)
       b = factor*b_max
       res(u,v) = ∫(  ε(v) ⊙ (sigma∘(ε(u),r,d))  - v⋅b )*d_omega
       jac(u,du,v) = ∫(  ε(v) ⊙ (d_sigma∘(ε(du),ε(u),new_state∘(r,d,ε(u))))  )*d_omega
@@ -97,9 +94,10 @@ function new_state(r_in,d_in,e_in)
     factors = collect(1:nsteps)*(1/nsteps)
     uh = zero(V)
     cache = nothing
+    println("Maximum load=$load, order=$order")
     for (istep,factor) in enumerate(factors)
       println("\n+++ Solving for load factor $factor in step $istep of $nsteps +++\n")
-      uh,cache = step(uh,factor,cache)
+      uh,cache = step(uh,factor,cache,load)
       dh = project(d,model,d_omega,order)
       rh = project(r,model,d_omega,order)
       writevtk(
