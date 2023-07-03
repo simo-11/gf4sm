@@ -94,7 +94,7 @@ function new_state(r_in,d_in,e_in)
     factors = collect(1:nsteps)*(1/nsteps)
     uh = zero(V)
     cache = nothing
-    println("Maximum load=$load, order=$order")
+    println("Length=$r, maximum load=$load, order=$order")
     for (istep,factor) in enumerate(factors)
       println("\n+++ Solving for load factor $factor in step $istep of $nsteps +++\n")
       uh,cache = step(uh,factor,cache,load)
