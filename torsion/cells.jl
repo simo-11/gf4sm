@@ -6,6 +6,6 @@
 include("rectangle.jl")
 ## run rectangle simulation
 using Gridap
-force = VectorValue(-1000,0,0)
-Rectangle.main(r=1,n=10,nsteps=1,order=3,load=force)
+force = VectorValue(0,-7800*9.8,0)#gravity
+Rectangle.main(r=10,n=10,nsteps=1,order=1,load=force)
 #

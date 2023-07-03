@@ -1,15 +1,15 @@
 module Rectangle
 using Gridap
 using LinearAlgebra
-const E = 3.0e10 # Pa
+const E = 210e9 # Pa - Steel
 const nu = 0.3 # dim-less
 const lambda = (E*nu)/((1+nu)*(1-2*nu))
 const my = E/(2*(1+nu))
 sigma_e(e) = lambda*tr(e)*one(e) + 2*my*e # Pa
 tau(e) = sqrt(e ⊙ sigma_e(e)) # Pa^(1/2), ⊙ = inner, Gridap: src/TensorValues/Operations.jl
-const sigma_u = 4.0e5 # Pa
+const sigma_u = 800e6 # Pa - High Strength
 const r_0 = sigma_u / sqrt(E) # Pa^(1/2)
-const H = 0.5 # dim-less
+const H = 0.5 # dim-less, find reference
 
 function d(r)
   1 - q(r)/r
