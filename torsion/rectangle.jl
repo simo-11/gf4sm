@@ -1,6 +1,7 @@
 module Rectangle
 using Gridap
 using LinearAlgebra
+using Printf
 const E = 210e9 # Pa - Steel
 const nu = 0.3 # dim-less
 const lambda = (E*nu)/((1+nu)*(1-2*nu))
@@ -58,7 +59,7 @@ function new_state(r_in,d_in,e_in)
     qh
   end
 
-  function main(;l,n,nsteps,order,load)
+  function main(;l,n,nsteps,order,load,xtol=0.001,ftol=0.001)
     domain = (0,l,0,1,0,1)
     partition = (l*n,n,n)
     model = CartesianDiscreteModel(domain,partition)
@@ -83,8 +84,8 @@ function new_state(r_in,d_in,e_in)
     # https://juliapackages.com/p/nlsolve
     nls = NLSolver(show_trace=true
     , extended_trace=false
-    , xtol=0.001
-    , ftol=0.001
+    , xtol=xtol
+    , ftol=ftol
     , method=:newton)
     solver = FESolver(nls)
     function step(uh_in,factor,cache,b_max)
@@ -99,9 +100,10 @@ function new_state(r_in,d_in,e_in)
     factors = collect(1:nsteps)*(1/nsteps)
     uh = zero(V)
     cache = nothing
-    println("Length=$l, maximum load=$load, order=$order")
+    println("Length=$l, maximum load=$load, order=$order, xtol=$xtol, ftol=$ftol")
     for (istep,factor) in enumerate(factors)
-      println("\n+++ Solving for load factor $factor in step $istep of $nsteps +++\n")
+      @printf("\nSolving for load factor %.2f in step %d of %d\n",
+      factor,istep,nsteps)
       uh,cache = step(uh,factor,cache,load)
       dh = project(d,model,d_omega,order)
       rh = project(r,model,d_omega,order)
