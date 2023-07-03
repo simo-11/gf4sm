@@ -80,7 +80,12 @@ function new_state(r_in,d_in,e_in)
     d_omega = Measure(omega,degree)
     r = CellState(r_0,d_omega)
     d = CellState(0.0,d_omega)
-    nls = NLSolver(show_trace=true, method=:newton)
+    # https://juliapackages.com/p/nlsolve
+    nls = NLSolver(show_trace=true
+    , extended_trace=false
+    , xtol=0.001
+    , ftol=0.001
+    , method=:newton)
     solver = FESolver(nls)
     function step(uh_in,factor,cache,b_max)
       b = factor*b_max
