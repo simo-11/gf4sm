@@ -58,9 +58,9 @@ function new_state(r_in,d_in,e_in)
     qh
   end
 
-  function main(;r,n,nsteps,order,load)
-    domain = (0,r,0,1,0,1)
-    partition = (r*n,n,n)
+  function main(;l,n,nsteps,order,load)
+    domain = (0,l,0,1,0,1)
+    partition = (l*n,n,n)
     model = CartesianDiscreteModel(domain,partition)
     labeling = get_face_labeling(model)
     # entities at lower x values
@@ -94,7 +94,7 @@ function new_state(r_in,d_in,e_in)
     factors = collect(1:nsteps)*(1/nsteps)
     uh = zero(V)
     cache = nothing
-    println("Length=$r, maximum load=$load, order=$order")
+    println("Length=$l, maximum load=$load, order=$order")
     for (istep,factor) in enumerate(factors)
       println("\n+++ Solving for load factor $factor in step $istep of $nsteps +++\n")
       uh,cache = step(uh,factor,cache,load)
