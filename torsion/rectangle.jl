@@ -59,7 +59,7 @@ function new_state(r_in,d_in,e_in)
     qh
   end
 
-  function main(;l,n,nsteps,order,load,xtol=0.001,ftol=0.001)
+  function main(;l,n,nsteps,order,load,xtol=0.001,ftol=0.001,iterations=10)
     domain = (0,l,0,1,0,1)
     partition = (l*n,n,n)
     model = CartesianDiscreteModel(domain,partition)
@@ -71,11 +71,15 @@ function new_state(r_in,d_in,e_in)
     x0c=range(start=1,step=2,length=4)
     x0e=range(start=13,step=2,length=4)
     x0f=25
-    fixed=vcat(x0c,x0e,x0f) 
-    add_tag_from_tags!(labeling,"fixed",fixed)
+    xfixed=vcat(x0c,x0e,x0f) 
+    add_tag_from_tags!(labeling,"xfixed",xfixed)
+    add_tag_from_tags!(labeling,"fixed",x0f)
     reffe = ReferenceFE(lagrangian,VectorValue{3,Float64},order)
-    V = TestFESpace(model,reffe,labels=labeling,dirichlet_tags=["fixed"])
-    U = TrialFESpace(V)
+    V = TestFESpace(model,reffe,labels=labeling
+    ,dirichlet_tags=["xfixed","fixed"]
+    ,dirichlet_masks=[(true,true,true),(true,true,true)])
+    fx(x)=VectorValue(0,0,0)
+    U = TrialFESpace(V,[fx,fx])
     degree = 2*order
     omega = Triangulation(model)
     d_omega = Measure(omega,degree)
@@ -86,6 +90,7 @@ function new_state(r_in,d_in,e_in)
     , extended_trace=false
     , xtol=xtol
     , ftol=ftol
+    , iterations=iterations
     , method=:newton)
     solver = FESolver(nls)
     function step(uh_in,factor,cache,b_max)
