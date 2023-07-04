@@ -23,3 +23,4 @@ Update fails for these but torsion works
 # References
  * Gridap
    * https://gridap.github.io/Tutorials/dev/
+   * [The software design of Gridap](https://arxiv.org/pdf/2109.12818v1.pdf)
