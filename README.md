@@ -21,6 +21,6 @@ Update fails for these but torsion works
 
 
 # References
- * Gridap
+ * [Gridap](https://github.com/gridap/Gridap.jl)
    * https://gridap.github.io/Tutorials/dev/
    * [The software design of Gridap](https://arxiv.org/pdf/2109.12818v1.pdf)
