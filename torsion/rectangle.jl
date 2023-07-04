@@ -72,11 +72,13 @@ function new_state(r_in,d_in,e_in)
     x0e=range(start=13,step=2,length=4)
     x0f=25
     xfixed=vcat(x0c,x0e,x0f) 
+    add_tag_from_tags!(labeling,"fixed_end_corners",vcat(x0c))
+    add_tag_from_tags!(labeling,"fixed_end_edges",vcat(x0e))
     add_tag_from_tags!(labeling,"xfixed",xfixed)
-    add_tag_from_tags!(labeling,"fixed",x0f)
+    add_tag_from_tags!(labeling,"fixed_end_center",x0f)
     reffe = ReferenceFE(lagrangian,VectorValue{3,Float64},order)
     V = TestFESpace(model,reffe,labels=labeling
-    ,dirichlet_tags=["xfixed","fixed"]
+    ,dirichlet_tags=["xfixed","fixed_end_corners"]
     ,dirichlet_masks=[(true,true,true),(true,true,true)])
     fx(x)=VectorValue(0,0,0)
     U = TrialFESpace(V,[fx,fx])
@@ -85,6 +87,7 @@ function new_state(r_in,d_in,e_in)
     d_omega = Measure(omega,degree)
     r = CellState(r_0,d_omega)
     d = CellState(0.0,d_omega)
+    writevtk(model,"../paraview/torsion_model")
     # https://juliapackages.com/p/nlsolve
     nls = NLSolver(show_trace=true
     , extended_trace=false
