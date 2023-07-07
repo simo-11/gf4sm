@@ -15,12 +15,13 @@ include("mesh.jl")
 ## 1d mesh
 domain=(0,1)
 partition=(2)
-domain,partition,model,vtk_file=Mesh.main(domain=domain,partition=partition)
+model,reffe,V,U,omega,d_omega,solver,uh=
+    Mesh.main(domain=domain,partition=partition,order=1,load=1)
 ## 2d mesh
 domain=(0,1,0,1)
 partition=(2,2)
-domain,partition,model,vtk_file=Mesh.main(domain=domain,partition=partition)
+model,reffe=Mesh.main(domain=domain,partition=partition,order=1)
 ## 3d mesh
 domain=(0,1,0,1,0,1)
 partition=(2,2,2)
-domain,partition,model,vtk_file=Mesh.main(domain=domain,partition=partition)
+model,reffe=Mesh.main(domain=domain,partition=partition,order=1)
