@@ -20,6 +20,13 @@ Update fails for these but torsion works
  * GridapP4est
  * GridapPETSc
 
+### 1.9.2
+code integrarion broken, possibly too early update. 
+
+Workflow updated so that only editing is done in vs-code and code is executed on distinct julia REPL.
+
+PATH updated
+
 ## Using Debugger
  * https://julialang.org/blog/2019/03/debuggers/
 
