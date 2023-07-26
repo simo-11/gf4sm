@@ -8,7 +8,7 @@ include("rectangle.jl")
 using Gridap
 force = VectorValue(0,-7800*9.8,0)#gravity
 # l>7 will fails to converge using default parameters to NLSolver
-Rectangle.main(l=1,n=1,nsteps=1,order=1,load=force)
+Rectangle.main(l=2,n=10,nsteps=1,order=1,load=force)
 #
 ## (re)load mesh
 include("mesh.jl")
