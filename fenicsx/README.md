@@ -1,5 +1,24 @@
 # Fenicsx
 
+# Running cases
+```
+simo@MSI:~/github/gf4sm/fenicsx$ python3 demo_elasticity.py
+```
+## Issues
+
+### AdjacencyList_int32 object has no attribute flatten
+```
+  File "/home/simo/github/gf4sm/fenicsx/demo_elasticity.py", line 66, in <listcomp>
+    dofs = [V.sub(i).dofmap.list.flatten() for i in range(3)]
+AttributeError: 'dolfinx.cpp.graph.AdjacencyList_int32' object has no attribute 'flatten'
+```
+
+
+# Developing and debugging
+```
+simo@MSI:~/github/gf4sm/fenicsx$ code .
+```
+
 # Links
  * https://jsdokken.com/dolfinx-tutorial/
  * https://docs.fenicsproject.org/dolfinx/main/python/
