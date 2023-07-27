@@ -46,4 +46,21 @@ with io.XDMFFile(domain.comm, fn, "w") as xdmf:
     xdmf.write_mesh(domain)
     uh.name = "Deformation"
     xdmf.write_function(uh)
-print("Wrote results to {0}".format(fn))
+print("Wrote displacement results to {0}".format(fn))
+s = sigma(uh) -1./3*ufl.tr(sigma(uh))*ufl.Identity(len(uh))
+von_Mises = ufl.sqrt(3./2*ufl.inner(s, s))
+V_von_mises = fem.FunctionSpace(domain, ("DG", 0))
+stress_expr = fem.Expression(
+    von_Mises, V_von_mises.element.interpolation_points())
+stresses = fem.Function(V_von_mises)
+stresses.interpolate(stress_expr)
+fn="../paraview/tutorial_linearelasticity_stresses.xdmf"
+with io.XDMFFile(domain.comm, fn, "w") as xdmf:
+    xdmf.write_mesh(domain)
+    stresses.name = "Stresses"
+    xdmf.write_function(stresses)
+print("Wrote stress results to {0}".format(fn))
+unorm = uh.x.norm()
+if domain.comm.rank == 0:
+    print("Displacement solution vector norm: {0:.3g}".format(unorm))
+    print("Stress solution vector norm: {0:.3g}".format(unorm))
