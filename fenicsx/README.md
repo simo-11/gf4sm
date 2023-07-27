@@ -1,6 +1,14 @@
 # Fenicsx
 
 # Running cases
+
+https://jsdokken.com/dolfinx-tutorial/chapter2/linearelasticity_code.html
+```
+simo@MSI:~/github/gf4sm/fenicsx$ python3 tutorial_lineareleasticity.py
+Wrote results to ../paraview/tutorial_linearelasticity_deformation.xdmf
+```
+
+https://docs.fenicsproject.org/dolfinx/main/python/demos/demo_elasticity.html
 ```
 simo@MSI:~/github/gf4sm/fenicsx$ python3 demo_elasticity.py
 ```
@@ -22,7 +30,6 @@ simo@MSI:~/github/gf4sm/fenicsx$ code .
 # Links
  * https://jsdokken.com/dolfinx-tutorial/
  * https://docs.fenicsproject.org/dolfinx/main/python/
-   * https://docs.fenicsproject.org/dolfinx/main/python/demos/demo_elasticity.html 
 
 # Installation on WSL Ubuntu
 Based on https://github.com/FEniCS/dolfinx#ubuntu-packages, 453 packages, 2169 MB
