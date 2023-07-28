@@ -63,4 +63,4 @@ print("Wrote stress results to {0}".format(fn))
 unorm = uh.x.norm()
 if domain.comm.rank == 0:
     print("Displacement solution vector norm: {0:.3g}".format(unorm))
-    print("Stress solution vector norm: {0:.3g}".format(unorm))
+    print("Stress solution vector norm: {0:.3g}".format(stresses.x.norm()))

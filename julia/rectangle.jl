@@ -59,9 +59,9 @@ function new_state(r_in,d_in,e_in)
     qh
   end
 
-  function main(;l,n,nsteps,order,load,xtol=0.001,ftol=0.001,iterations=10)
-    domain = (0,l,0,1,0,1)
-    partition = (l*n,n,n)
+  function main(;l,n=1,nsteps=1,order,load,xtol=0.001,ftol=0.001,iterations=10,h=1,w=1,nx=l*n,ny=n,nz=n)
+    domain = (0,l,0,h,0,w)
+    partition = (nx,ny,nz)
     model = CartesianDiscreteModel(domain,partition)
     labeling = get_face_labeling(model)
     # entities at lower x values
@@ -87,7 +87,7 @@ function new_state(r_in,d_in,e_in)
     d_omega = Measure(omega,degree)
     r = CellState(r_0,d_omega)
     d = CellState(0.0,d_omega)
-    writevtk(model,"../paraview/torsion_model")
+    writevtk(model,"../paraview/rectangle_model")
     # https://juliapackages.com/p/nlsolve
     nls = NLSolver(show_trace=true
     , extended_trace=false
@@ -108,17 +108,21 @@ function new_state(r_in,d_in,e_in)
     factors = collect(1:nsteps)*(1/nsteps)
     uh = zero(V)
     cache = nothing
-    println("Length=$l, maximum load=$load, order=$order, xtol=$xtol, ftol=$ftol")
+    println("Length(x)=$l, nx=$nx height(y)=$h, ny=$ny, width(z)=$w, nz=$nz
+     full load=$load, order=$order, xtol=$xtol, ftol=$ftol")
     for (istep,factor) in enumerate(factors)
       @printf("\nSolving for load factor %.2f in step %d of %d\n",
       factor,istep,nsteps)
       uh,cache = step(uh,factor,cache,load)
       dh = project(d,model,d_omega,order)
       rh = project(r,model,d_omega,order)
+      @printf("\nMaximum displacement %.3g\n",
+        maximum(abs.(uh.free_values)))
       writevtk(
-        omega,"../paraview/torsion_$(lpad(istep,3,'0'))",
+        omega,"../paraview/rectangle_$(lpad(istep,3,'0'))",
         cellfields=["uh"=>uh,"epsi"=>ε(uh),"damage"=>dh,
                     "threshold"=>rh,"sigma_elast"=>sigma_e∘ε(uh)])
     end
+    return model,reffe,V,U,omega,d_omega,uh
   end
 end
