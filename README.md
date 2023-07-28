@@ -25,3 +25,8 @@ Studies for using general fem packages for structural mechanics
 | julia(Gridap) cell g_b_3_1_1_1 | 0.0041 | 1.5 |
 | julia(Gridap) cell g_b_3_2_1_1 | 0.0043 | 1.6 |
 
+cell notation
+ * g_b_ means Gridap Bending
+ * next number is order. 1. order elements are not efficient for bending but large amounts give good results
+ * next numbers nx, ny and nz are number of elements in each direction
+
