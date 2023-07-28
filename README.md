@@ -3,13 +3,15 @@ Studies for using general fem packages for structural mechanics
 
 ## Bending
 
-(Beam theory based results)[https://docs.google.com/spreadsheets/d/1350EPOZFU3kTkPZUV8PogOySmf1ne2bMS18DN-5WTs4/]
+[Beam theory based results](https://docs.google.com/spreadsheets/d/1350EPOZFU3kTkPZUV8PogOySmf1ne2bMS18DN-5WTs4/)
  * E=210 GPa
  * rho=7800 kg/m^3
  * nu=0.3 (Not effective in beam theory)
 
 100x100 mm (0.1x0.1 m) solid, own weight, L= 3 m
-|| Simulation || deflection at tip [m] || Solve time [s]||
+
+| Simulation | deflection at tip [m] | Solve time [s]|
+|------------|-----------------------|----------------|
 | Beam theory | 0.0042| |
 | julia(Gridap) cell g_b_1_9_3_3 | 0.0008 | 0.05 | 
 | julia(Gridap) cell g_b_1_30_1_1 | 0.0028 | 0.1 | 
