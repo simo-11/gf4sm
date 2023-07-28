@@ -2,7 +2,7 @@
 
 ## execution
 ```
-PS D:\github\gf4sm\torsion> code .
+PS D:\github\gf4sm\julia> code .
 ```
 ## solid rectangle
 
