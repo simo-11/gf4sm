@@ -8,7 +8,7 @@ Studies for using general fem packages for structural mechanics
  * rho=7800 kg/m^3
  * nu=0.3 (Not effective in beam theory)
 
-100x100 mm (0.1x0.1 m) solid, own weight, L= 3 m
+100x100 mm (0.1x0.1 m) solid, own weight, L= 3 m, All dofs for all nodes locked at fixed end.
 
 | Simulation | deflection at tip [m] | Solve time [s]|
 |------------|-----------------------|----------------|
@@ -30,4 +30,6 @@ cell notation
  * next number is order.
    * 1. order elements are not efficient for bending but large amounts give good results
  * next numbers nx, ny and nz are number of elements in each direction
+
+Gridap solve time is about doubled if material constants are variables.
 
