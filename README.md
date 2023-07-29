@@ -11,8 +11,8 @@ Studies for using general fem packages for structural mechanics
 100x100 mm (0.1x0.1 m) solid, own weight, L= 3 m, All dofs for all nodes locked at fixed end.
 
 | Simulation | deflection at tip [m] | Solve time [s]|
-|  | g/f | g/f |   
 |------------|-----------------------|----------------|
+|  | g/f | g/f |   
 | Beam theory | 0.0044| |
 | b_1_9_3_3 | 0.0008 | 0.05 | 
 | b_1_30_1_1 | 0.0028 | 0.1 | 
