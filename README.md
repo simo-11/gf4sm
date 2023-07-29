@@ -29,7 +29,7 @@ Studies for using general fem packages for structural mechanics
 cell notation
  * g_b_ means Gridap(Julia) Bending
  * next number is order.
-   * 1. order elements are not efficient for bending but large amounts give good results
+   * First order elements are not efficient for bending but large amounts give good results
  * next numbers nx, ny and nz are number of elements in each direction
 
 Gridap solve time is about doubled if material constants are variables.
