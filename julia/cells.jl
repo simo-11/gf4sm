@@ -17,7 +17,8 @@ force = VectorValue(0,-7800*9.8,0)#gravity
 ## g_b_1_100_4_2
 using Gridap
 force = VectorValue(0,-7800*9.8,0)#gravity
-Rectangle.main(l=3,h=0.1,w=0.1,nx=100,ny=4,nz=2,nsteps=1,order=1,load=force)
+@time Rectangle.main(l=3,h=0.1,w=0.1,nx=100,ny=4,nz=2,nsteps=1,order=1,load=force)
+nothing
 ## g_b_2_3_1_1
 using Gridap
 force = VectorValue(0,-7800*9.8,0)#gravity

@@ -2,15 +2,42 @@ module Rectangle
 using Gridap
 using LinearAlgebra
 using Printf
-const E = 210e9 # Pa - Steel
-const nu = 0.3 # dim-less
-const lambda = (E*nu)/((1+nu)*(1-2*nu))
-const my = E/(2*(1+nu))
+E = 210e9 # Pa - Steel
+nu = 0.3 # dim-less
+lambda = (E*nu)/((1+nu)*(1-2*nu))
+my = E/(2*(1+nu))
 sigma_e(e) = lambda*tr(e)*one(e) + 2*my*e # Pa
 tau(e) = sqrt(e ⊙ sigma_e(e)) # Pa^(1/2), ⊙ = inner, Gridap: src/TensorValues/Operations.jl
-const sigma_u = 800e6 # Pa - High Strength
-const r_0 = sigma_u / sqrt(E) # Pa^(1/2)
-const H = 0.5 # dim-less, find reference
+sigma_u = 800e6 # Pa - High Strength
+r_0 = sigma_u / sqrt(E) # Pa^(1/2)
+H = 0.5 # dim-less, find reference
+
+"""
+    setNu(newNu)
+
+Update nu
+"""
+function setNu(newVal)
+  Rectangle.nu=newVal
+  materialUpdated()
+end
+
+"""
+    setNu(newNu)
+
+Update E
+"""
+function setE(newVal)
+  Rectangle.E=newVal
+  materialUpdated()
+end
+
+
+function materialUpdated()
+  Rectangle.lambda = (E*nu)/((1+nu)*(1-2*nu))
+  Rectangle.my = E/(2*(1+nu))
+  nothing
+end
 
 function d(r)
   1 - q(r)/r
