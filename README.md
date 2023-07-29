@@ -12,7 +12,7 @@ Studies for using general fem packages for structural mechanics
 
 | Simulation | deflection at tip [m] | Solve time [s]|
 |------------|-----------------------|----------------|
-| Beam theory | 0.0042| |
+| Beam theory | 0.0044| |
 | g_b_1_9_3_3 | 0.0008 | 0.05 | 
 | g_b_1_30_1_1 | 0.0028 | 0.1 | 
 | g_b_1_400_1_1 | 0.0038 | 0.1 | 
