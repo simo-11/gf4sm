@@ -14,12 +14,12 @@ Studies for using general fem packages for structural mechanics
 |------------|-----------------------|----------------|
 |  | g/f | g/f |   
 | Beam theory | 0.0044| |
-| b_1_9_3_3 | 0.0008 | 0.05 | 
+| b_1_9_3_3 | 0.0008/0.0008 | 0.05/0.11 | 
 | b_1_30_1_1 | 0.0028 | 0.1 | 
 | b_1_400_1_1 | 0.0038 | 0.1 | 
 | b_1_100_4_2 | 0.0042/0.0042 | 0.19/0.12 |
 | b_1_400_4_2 (nu=0) | 0.0044/0.00424 | 1.0/0.13 |
-| b_2_1_1_1 | 0.0029 | 0.16 | 
+| b_2_1_1_1 | 0.0029/0.0029 | 0.16/0.1 | 
 | b_2_2_1_1 | 0.0039 | 0.18 | 
 | b_2_3_1_1 | 0.0041 | 0.17 | 
 | b_2_4_1_1 | 0.0042 | 0.18 | 
@@ -35,7 +35,9 @@ cell notation
  * next numbers nx, ny and nz are number of elements in each direction
 
 Gridap solve time is about doubled if material constants are variables. 
-This can be handled by refactoring code as is done in python.
+This can be handled by refactoring code in same ways as is done in python.
+Gridap (as of 2023/07) is quite sensitive to increasing of number or order of elements. 
+Runtime and memory allocations increase heavily.
 
 ### Gridap sample runs
 See also (Sample command cells)[julia/cells.jl]
