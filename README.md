@@ -1,5 +1,7 @@
 # gf4sm
-Studies for using general fem packages for structural mechanics
+Studies for using general fem packages for structural mechanics.
+Most packages are using or can use
+ * [PETSc](https://petsc.org/) 
 
 ## Bending
 
