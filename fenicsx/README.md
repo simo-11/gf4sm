@@ -37,4 +37,5 @@ simo@MSI:~/github/gf4sm/fenicsx$ code .
 Based on https://github.com/FEniCS/dolfinx#ubuntu-packages, 453 packages, 2169 MB
 ```
 root@MSI:/home/simo# apt install fenicsx
+root@MSI:/home/simo# apt install gmsh python3-gmsh
 ```
