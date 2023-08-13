@@ -1,6 +1,7 @@
 # %%
 import importlib
 import rectangle
+import membrane
 import timeit
 # %%
 importlib.reload(rectangle)
@@ -20,3 +21,8 @@ timeit.timeit(lambda:warping.main(order=1,nx=100,ny=2),number=1)
 # %%
 warping.main(order=1)
 # %%
+import importlib
+importlib.reload(membrane)
+# %%
+# %%
+membrane.mesh()
