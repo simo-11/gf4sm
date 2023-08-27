@@ -21,7 +21,8 @@ def mesh():
 def main():
     gmsh_model_rank = 0
     mesh_comm = MPI.COMM_WORLD
-    domain, cell_markers, facet_markers = gmshio.model_to_mesh(gmsh.model, mesh_comm, gmsh_model_rank, gdim=gdim)   
+    domain, cell_markers, facet_markers = gmshio.model_to_mesh(
+        gmsh.model, mesh_comm, gmsh_model_rank, gdim=gdim)
     V = fem.FunctionSpace(domain, ("CG", 1))
     x = ufl.SpatialCoordinate(domain)
     beta = fem.Constant(domain, ScalarType(12))
@@ -35,7 +36,8 @@ def main():
     v = ufl.TestFunction(V)
     a = ufl.dot(ufl.grad(u), ufl.grad(v)) * ufl.dx
     L = p * v * ufl.dx
-    problem = fem.petsc.LinearProblem(a, L, bcs=[bc], petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
+    problem = fem.petsc.LinearProblem(a, L, bcs=[bc],
+                                      petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
     uh = problem.solve()
     Q = fem.FunctionSpace(domain, ("CG", 5))
     expr = fem.Expression(p, Q.element.interpolation_points())
