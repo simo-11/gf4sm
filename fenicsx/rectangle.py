@@ -5,7 +5,14 @@ import ufl
 from mpi4py import MPI
 from petsc4py.PETSc import ScalarType
 from dolfinx import mesh, fem, plot, io
-def main(l=3,order=1,h=0.1,w=0.1,nx=10,ny=1,nz=1,E=210e9,nu=0.3,rho=7800,g=9.8):
+from enum import Enum, unique
+@unique
+class Load(Enum):
+    Bending='Bending due to own weight',
+    Torsion='Torsion at free end'
+
+def main(l=3,order=1,h=0.1,w=0.1,nx=10,ny=1,nz=1,E=210e9,nu=0.3,
+         rho=7800,g=9.8,loadCase=Load.Bending):
     domain = mesh.create_box(MPI.COMM_WORLD, [np.array([0,0,0]), np.array([l, h, w])],
                 [nx,ny,nz], cell_type=mesh.CellType.hexahedron)
     V = fem.VectorFunctionSpace(domain, ("CG", order))
@@ -25,7 +32,13 @@ def main(l=3,order=1,h=0.1,w=0.1,nx=10,ny=1,nz=1,E=210e9,nu=0.3,rho=7800,g=9.8):
         return lambda_ * ufl.nabla_div(u) * ufl.Identity(len(u)) + 2*mu*epsilon(u)
     u = ufl.TrialFunction(V)
     v = ufl.TestFunction(V)
-    f = fem.Constant(domain, ScalarType((0, -rho*g, 0)))
+    if loadCase==Load.Bending:
+        f = fem.Constant(domain, ScalarType((0, -rho*g, 0)))
+    elif loadCase==Load.Torsion:
+        x = mesh.locate_entities() # TODO
+        f=fem.Expression('3',x)
+    else:
+        raise Exception('loadCase is not defined')
     a = ufl.inner(sigma(u), epsilon(v)) * ufl.dx
     L = ufl.dot(f, v) * ufl.dx + ufl.dot(T, v) * ds
     problem = fem.petsc.LinearProblem(
@@ -34,8 +47,8 @@ def main(l=3,order=1,h=0.1,w=0.1,nx=10,ny=1,nz=1,E=210e9,nu=0.3,rho=7800,g=9.8):
     bcs=[bc], 
     petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
     uh = problem.solve()
-    print("Maximum displacement {0:.3g}".format(-uh.x.array.min()))
-    fn="../paraview/rectangle.xdmf"
+    print("Maximum displacement {0:.3g} for {1}".format(-uh.x.array.min()),loadCase)
+    fn="../paraview/rectangle_{0}.xdmf".format(loadCase)
     with io.XDMFFile(domain.comm, fn, "w") as xdmf:
         xdmf.write_mesh(domain)
         uh.name = "Deformation"
