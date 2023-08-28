@@ -35,8 +35,15 @@ def main(l=3,order=1,h=0.1,w=0.1,nx=10,ny=1,nz=1,E=210e9,nu=0.3,
     if loadCase==Load.Bending:
         f = fem.Constant(domain, ScalarType((0, -rho*g, 0)))
     elif loadCase==Load.Torsion:
-        x = mesh.locate_entities() # TODO
-        f=fem.Expression('3',x)
+        def y_0(x):
+            return np.isclose(x[1],0)
+        def y_h(x):
+            return np.isclose(x[1],h)
+        x1 = mesh.locate_entities(domain,fdim,y_0) #TODO
+        f1=fem.Expression('1',x1)
+        x2 = mesh.locate_entities(domain,fdim,y_h) 
+        f2=fem.Expression('-1',x2)
+        f1=f1+f2
     else:
         raise Exception('loadCase is not defined')
     a = ufl.inner(sigma(u), epsilon(v)) * ufl.dx
