@@ -11,6 +11,17 @@ class Load(Enum):
     Bending='Bending due to own weight',
     Torsion='Torsion at free end'
 
+class TorsionLoad(fem.Expression):
+    def __init__(self, mesh, **kwargs):
+        super().__init__(**kwargs)
+        self.mesh = mesh
+    
+    def eval(self, value, x):
+        value[0]=x[0]
+        value[1]=x[1]
+        value[2]=x[2]
+
+
 def main(l=3,order=1,h=0.1,w=0.1,nx=10,ny=1,nz=1,E=210e9,nu=0.3,
          rho=7800,g=9.8,loadCase=Load.Bending):
     domain = mesh.create_box(MPI.COMM_WORLD, [np.array([0,0,0]), np.array([l, h, w])],
@@ -43,7 +54,7 @@ def main(l=3,order=1,h=0.1,w=0.1,nx=10,ny=1,nz=1,E=210e9,nu=0.3,
         f1=fem.Expression('1',x1)
         x2 = mesh.locate_entities(domain,fdim,y_h) 
         f2=fem.Expression('-1',x2)
-        f1=f1+f2
+        f=TorsionLoad()
     else:
         raise Exception('loadCase is not defined')
     a = ufl.inner(sigma(u), epsilon(v)) * ufl.dx
