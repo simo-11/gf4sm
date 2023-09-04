@@ -65,7 +65,7 @@ def main(l=3,order=1,h=0.1,w=0.1,nx=10,ny=1,nz=1,E=210e9,nu=0.3,
     bcs=[bc], 
     petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
     uh = problem.solve()
-    print("Maximum displacement {0:.3g} for {1}".format(-uh.x.array.min()),loadCase)
+    print("Maximum displacement {0:.3g} for {1}".format(-uh.x.array.min(),loadCase))
     fn="../paraview/rectangle_{0}.xdmf".format(loadCase)
     with io.XDMFFile(domain.comm, fn, "w") as xdmf:
         xdmf.write_mesh(domain)
