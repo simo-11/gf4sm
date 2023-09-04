@@ -31,7 +31,7 @@ simo@MSI:~/github/gf4sm/fenicsx$ code .
  * Tutorial - https://jsdokken.com/dolfinx-tutorial/
  * Documentation - https://docs.fenicsproject.org/dolfinx/main/python/
  * Unified Form Language - creates c-code based on python
-   * Partial element list - https://fenics.readthedocs.io/projects/ufl/en/latest/manual/form_language.html
+   * Partial element list in form language - https://fenics.readthedocs.io/projects/ufl/en/latest/manual/form_language.html
  * Book - https://launchpadlibrarian.net/83776282/fenics-book-2011-10-27-final.pdf
    
 
