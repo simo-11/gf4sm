@@ -33,6 +33,7 @@ simo@MSI:~/github/gf4sm/fenicsx$ code .
  * Unified Form Language - creates c-code based on python
    * Partial element list in form language - https://fenics.readthedocs.io/projects/ufl/en/latest/manual/form_language.html
  * Book - https://launchpadlibrarian.net/83776282/fenics-book-2011-10-27-final.pdf
+   * Applications in solid mechanics starting at page 505(517 in pdf) 
    
 
 # Installation on WSL Ubuntu
