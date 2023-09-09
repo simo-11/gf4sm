@@ -32,8 +32,12 @@ simo@MSI:~/github/gf4sm/fenicsx$ code .
  * Documentation - https://docs.fenicsproject.org/dolfinx/main/python/
  * Unified Form Language - creates c-code based on python
    * Partial element list in form language - https://fenics.readthedocs.io/projects/ufl/en/latest/manual/form_language.html
- * Book - https://launchpadlibrarian.net/83776282/fenics-book-2011-10-27-final.pdf
-   * Applications in solid mechanics starting at page 505(517 in pdf) 
+ * Book on fenics (old version) - https://launchpadlibrarian.net/83776282/fenics-book-2011-10-27-final.pdf
+   * Applications in solid mechanics starting at page 505(517 in pdf)
+ * Fracture mechanics examples https://newfrac.github.io/fenicsx-fracture/
+ * dolphiny high-level wrappers for DOLFINx - https://github.com/michalhabera/dolfiny/
+ * Discource
+   * https://fenicsproject.discourse.group/t/plasticity-in-fenicsx/11855 
    
 
 # Installation on WSL Ubuntu
