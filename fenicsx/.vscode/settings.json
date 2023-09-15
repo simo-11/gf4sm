@@ -1,4 +1,8 @@
 {
     "python.analysis.typeCheckingMode": "off",
-    "notebook.output.textLineLimit": 300
+    "notebook.output.textLineLimit": 300,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none"
 }
