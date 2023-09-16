@@ -7,6 +7,7 @@ import ufl
 import dolfinx.fem as fem
 import dolfinx.mesh as mesh
 import pyvista
+import petsc4py 
 
 my_globals = {'gmsh_initialized': False}
 
@@ -17,7 +18,7 @@ def generate_mesh_with_crack(Lx = 1.,
     dist_min = .1,
     dist_max = .3,
     refinement_ratio = 10,
-    verbosity =1):
+    verbosity =3):
     gdim = 2
     mesh_comm = MPI.COMM_WORLD
     model_rank = 0
@@ -81,7 +82,7 @@ def generate_mesh_with_crack(Lx = 1.,
     top_facets = mesh.locate_entities_boundary(msh, 1, lambda x : np.isclose(x[1], Ly))
     mt = mesh.meshtags(msh, 1, top_facets, 1)
     ds = ufl.Measure("ds", subdomain_data=mt)
-    if verbosity>1:
+    if verbosity>2:
         cell_tags.name = f"{msh.name}_cells"
         facet_tags.name = f"{msh.name}_facets" 
         fn="../paraview/newfrac-mesh.xdmf"
@@ -93,7 +94,7 @@ def generate_mesh_with_crack(Lx = 1.,
             file.write_meshtags(facet_tags, 
                 geometry_xpath=f"/Xdmf/Domain/Grid[@Name='{msh.name}']/Geometry")
         print("Wrote {0}, Use Wireframe in paraview to view mesh".format(fn))  
-    if verbosity>0:
+    if verbosity>2:
         pyvista.start_xvfb()
         # Extract topology from mesh and create pyvista mesh
         topology, cell_types, x = dolfinx.plot.create_vtk_mesh(msh)
@@ -126,3 +127,94 @@ def warp_plot_2d(u,cell_field=None,
     plotter.add_mesh(warped_grid,**kwargs)
     plotter.camera_position = 'xy'
     return plotter
+
+def solve_elasticity(Lx = 1.,
+    Ly = .5,
+    Lcrack = 0.3,
+    lc = 0.1,
+    dist_min = .1,
+    dist_max = .3,
+    refinement_ratio = 10,
+    E=1,
+    nu=0.3,
+    load=1,
+    verbosity =1):
+    msh, mt = generate_mesh_with_crack(
+        Lcrack=Lcrack,
+        Ly=Ly,
+        lc=lc,  
+        refinement_ratio=refinement_ratio,  
+        dist_min=dist_min,
+        dist_max=dist_max,
+        verbosity=verbosity
+    )
+    element = ufl.VectorElement('Lagrange',msh.ufl_cell(),degree=1,dim=2)
+    V = fem.FunctionSpace(msh, element)
+    bottom_no_crack_facets = mesh.locate_entities_boundary(
+        msh, 1, lambda x : np.logical_and(np.isclose(x[1], 0.0), 
+                            x[0] > Lcrack))
+    bottom_no_crack_dofs_y = fem.locate_dofs_topological(
+        V.sub(1), msh.topology.dim-1, bottom_no_crack_facets)
+    right_facets = mesh.locate_entities_boundary(
+        msh, 1, lambda x :np.isclose(x[0], Lx))
+    right_dofs_x = fem.locate_dofs_topological(
+        V.sub(0), msh.topology.dim-1, right_facets)
+    bc_bottom = fem.dirichletbc(
+        petsc4py.PETSc.ScalarType(0), bottom_no_crack_dofs_y, V.sub(1))
+    bc_right = fem.dirichletbc(
+        petsc4py.PETSc.ScalarType(0), right_dofs_x, V.sub(0))
+    bcs = [bc_bottom, bc_right]
+    dx = ufl.Measure("dx",domain=msh)
+    top_facets = mesh.locate_entities_boundary(msh, 1, 
+        lambda x : np.isclose(x[1], Ly))
+    ds = ufl.Measure("ds", subdomain_data=mt)
+    u = ufl.TrialFunction(V)
+    v = ufl.TestFunction(V)
+    lmbda = E * nu / ((1.0 + nu) * (1.0 - 2.0 * nu))
+    # this is for plane-stress
+    mu = E / (2.0 * (1.0 + nu))
+    lmbda = 2 * mu * lmbda / ( lmbda + 2 * mu )
+    def eps(u):
+        """Strain"""
+        return ufl.sym(ufl.grad(u))
+    def sigma(eps):
+        """Stress"""
+        return 2.0 * mu * eps + lmbda * ufl.tr(eps) * ufl.Identity(2)
+    def a(u,v):
+        """The bilinear form of the weak formulation"""
+        return ufl.inner(sigma(eps(u)), eps(v)) * dx 
+    def L(v): 
+        """The linear form of the weak formulation"""
+        # Volume force
+        b = fem.Constant(msh,petsc4py.PETSc.ScalarType((0, 0)))
+        # Surface force on the top
+        f = fem.Constant(msh,petsc4py.PETSc.ScalarType((0, load)))
+        return ufl.dot(b, v) * dx + ufl.dot(f, v) * ds(1)
+    problem = fem.petsc.LinearProblem(a(u,v), L(v), bcs=bcs, 
+        petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
+    uh = problem.solve()
+    uh.name = "displacement"
+    energy = fem.assemble_scalar(fem.form(0.5 * a(uh, uh) - L(uh)))
+    print(f"The potential energy is {energy:2.3e}")
+    if verbosity>0:
+        fn="../paraview/newfrac-elasticity.xdmf"
+        with dolfinx.io.XDMFFile(MPI.COMM_WORLD, fn, "w") as file:
+            file.write_mesh(uh.function_space.mesh)
+            file.write_function(uh)
+            print("Wrote displacements to {0}".format(fn)) 
+    if verbosity>0:
+        sigma_iso = 1./3*ufl.tr(sigma(eps(uh)))*ufl.Identity(len(uh))
+        sigma_dev =  sigma(eps(uh)) - sigma_iso
+        von_Mises = ufl.sqrt(3./2*ufl.inner(sigma_dev, sigma_dev))
+        V_von_mises = fem.FunctionSpace(msh, ("DG", 0))
+        stress_expr = fem.Expression(von_Mises, 
+            V_von_mises.element.interpolation_points())
+        vm_stress = fem.Function(V_von_mises)
+        vm_stress.interpolate(stress_expr)
+        plotter = warp_plot_2d(uh,cell_field=vm_stress,
+                            field_name="Von Mises stress",
+                            factor=.05,
+                            show_edges=True,
+                            clim=[0, 0.3])
+        if not pyvista.OFF_SCREEN:
+            plotter.show()
