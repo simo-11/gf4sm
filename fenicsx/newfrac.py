@@ -97,7 +97,6 @@ def generate_mesh_with_crack(Lx = 1.,
     top_facets = mesh.locate_entities_boundary(msh, 1, 
             lambda x : np.isclose(x[1], Ly))
     mt = mesh.meshtags(msh, 1, top_facets, 1)
-    ds = ufl.Measure("ds", subdomain_data=mt)
     if verbosity>2:
         cell_tags.name = f"{msh.name}_cells"
         facet_tags.name = f"{msh.name}_facets" 
@@ -154,6 +153,7 @@ def solve_elasticity(Lx = 1.,
     E=1,
     nu=0.3,
     load=None,
+    loadX=None,
     verbosity =1):
     msh, mt = generate_mesh_with_crack(
         Lcrack=Lcrack,
@@ -183,6 +183,16 @@ def solve_elasticity(Lx = 1.,
     dx = ufl.Measure("dx",domain=msh)
     top_facets = mesh.locate_entities_boundary(msh, 1, 
         lambda x : np.isclose(x[1], Ly))
+    if loadX!=None:
+        load_facets = mesh.locate_entities_boundary(msh, 1, 
+            lambda x : np.logical_and(np.isclose(x[1], Ly),
+                        np.isclose(x[0],loadX,atol=lc)))
+        if len(load_facets)<1:
+            raise ValueError('No facets found for loadX={0:.3g}'
+                             .format(loadX))
+        elif len(load_facets)>1:
+            print(f"{len(load_facets)} cells will be loaded")
+        mt = mesh.meshtags(msh, 1, load_facets, 1)
     ds = ufl.Measure("ds", subdomain_data=mt)
     u = ufl.TrialFunction(V)
     v = ufl.TestFunction(V)
