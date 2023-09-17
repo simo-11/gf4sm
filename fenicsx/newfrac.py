@@ -19,13 +19,23 @@ def generate_mesh_with_crack(Lx = 1.,
     dist_max = .3,
     refinement_ratio = 10,
     verbosity =3):
+    """
+    Lcrack, length of crack if <=0, no crack will be made
+    Ly, height
+    lc, caracteristic length of the mesh
+    refinement_ratio, how much it is refined at the tip zone
+    dist_min, radius of tip zone, not used if there is no crack
+    dist_max, radius of the transition zone, not used if there is no crack
+    verbosity, >2 will create figures
+    """
     gdim = 2
     mesh_comm = MPI.COMM_WORLD
     model_rank = 0
     if not my_globals['gmsh_initialized']:
         gmsh.initialize()
         my_globals['gmsh_initialized']=True
-    facet_tags = {"left": 1, "right": 2, "top": 3, "crack": 4, "bottom_no_crack": 5}
+    facet_tags = {"left": 1, "right": 2, 
+                  "top": 3, "bottom_no_crack": 5}
     cell_tags = {"all": 20}
     if mesh_comm.rank == model_rank:
         model = gmsh.model()
@@ -33,29 +43,37 @@ def generate_mesh_with_crack(Lx = 1.,
         model.setCurrent("Rectangle")
         # Create the points
         p1 = model.geo.addPoint(0.0, 0.0, 0, lc)
-        p2 = model.geo.addPoint(Lcrack, 0.0, 0, lc)
+        if Lcrack>0:
+            p2 = model.geo.addPoint(Lcrack, 0.0, 0, lc)
+            facet_tags["crack"]=4
         p3 = model.geo.addPoint(Lx, 0, 0, lc)
         p4 = model.geo.addPoint(Lx, Ly, 0, lc)
         p5 = model.geo.addPoint(0, Ly, 0, lc)
         # Create the lines
-        l1 = model.geo.addLine(p1, p2, tag=facet_tags["crack"])
-        l2 = model.geo.addLine(p2, p3, tag=facet_tags["bottom_no_crack"])
+        if Lcrack>0:
+            l1 = model.geo.addLine(p1, p2, tag=facet_tags["crack"])
+            l2 = model.geo.addLine(p2, p3, tag=facet_tags["bottom_no_crack"])
+        else:
+            l2 = model.geo.addLine(p1, p3, tag=facet_tags["bottom_no_crack"])                
         l3 = model.geo.addLine(p3, p4, tag=facet_tags["right"])
         l4 = model.geo.addLine(p4, p5, tag=facet_tags["top"])
         l5 = model.geo.addLine(p5, p1, tag=facet_tags["left"])
         # Create the surface
-        cloop1 = model.geo.addCurveLoop([l1, l2, l3, l4, l5])
-        surface_1 = model.geo.addPlaneSurface([cloop1])
-        
+        if Lcrack>0:
+            cloop1 = model.geo.addCurveLoop([l1, l2, l3, l4, l5])
+        else:
+            cloop1 = model.geo.addCurveLoop([l2, l3, l4, l5])
+        surface_1 = model.geo.addPlaneSurface([cloop1])      
         # Define the mesh size and fields for the mesh refinement
         model.mesh.field.add("Distance", 1)
-        model.mesh.field.setNumbers(1, "NodesList", [p2])
         # SizeMax -                   / ------------------
         #                            /
         # SizeMin -o----------------/
         #          |                |  |
         #        Point        DistMin   DistMax
         model.mesh.field.add("Threshold", 2)
+        if Lcrack>0:
+            model.mesh.field.setNumbers(1, "NodesList", [p2])
         model.mesh.field.setNumber(2, "IField", 1)
         model.mesh.field.setNumber(2, "LcMin", lc / refinement_ratio)
         model.mesh.field.setNumber(2, "LcMax", lc)
@@ -64,22 +82,20 @@ def generate_mesh_with_crack(Lx = 1.,
         model.mesh.field.setAsBackgroundMesh(2)
         gmsh.option.setNumber("General.Verbosity", 3)
         model.geo.synchronize()
-        
         # Assign mesh and facet tags
         surface_entities = [entity[1] for entity in model.getEntities(2)]
         model.addPhysicalGroup(2, surface_entities, tag=cell_tags["all"])
         model.setPhysicalName(2, 2, "Rectangle surface")
         model.mesh.generate(gdim)
-
         for (key,value) in facet_tags.items():
             model.addPhysicalGroup(1, [value], tag=value)
             model.setPhysicalName(1, value, key)
-
     msh, cell_tags, facet_tags = gmshio.model_to_mesh(
         model, mesh_comm, model_rank, gdim=gdim)
     msh.name = "rectangle"
     dx = ufl.Measure("dx",domain=msh)
-    top_facets = mesh.locate_entities_boundary(msh, 1, lambda x : np.isclose(x[1], Ly))
+    top_facets = mesh.locate_entities_boundary(msh, 1, 
+            lambda x : np.isclose(x[1], Ly))
     mt = mesh.meshtags(msh, 1, top_facets, 1)
     ds = ufl.Measure("ds", subdomain_data=mt)
     if verbosity>2:
@@ -137,7 +153,7 @@ def solve_elasticity(Lx = 1.,
     refinement_ratio = 10,
     E=1,
     nu=0.3,
-    load=1,
+    load=None,
     verbosity =1):
     msh, mt = generate_mesh_with_crack(
         Lcrack=Lcrack,
@@ -186,10 +202,11 @@ def solve_elasticity(Lx = 1.,
     def L(v): 
         """The linear form of the weak formulation"""
         # Volume force
-        b = fem.Constant(msh,petsc4py.PETSc.ScalarType((0, 0)))
+        #b = fem.Constant(msh,petsc4py.PETSc.ScalarType((0, 0)))
         # Surface force on the top
-        f = fem.Constant(msh,petsc4py.PETSc.ScalarType((0, load)))
-        return ufl.dot(b, v) * dx + ufl.dot(f, v) * ds(1)
+        f = fem.Constant(msh,petsc4py.PETSc.ScalarType(load))
+        #return ufl.dot(b, v) * dx + ufl.dot(f, v) * ds(1)
+        return ufl.dot(f, v) * ds(1)
     problem = fem.petsc.LinearProblem(a(u,v), L(v), bcs=bcs, 
         petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
     uh = problem.solve()
