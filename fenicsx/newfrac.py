@@ -155,7 +155,7 @@ def solve_elasticity(Lx = 1.,
     load=None,
     loadX=None,
     verbosity =1):
-    msh, mt = generate_mesh_with_crack(
+    msh, mt = generate_mesh_with_crack(Lx,
         Lcrack=Lcrack,
         Ly=Ly,
         lc=lc,  
@@ -221,8 +221,11 @@ def solve_elasticity(Lx = 1.,
         petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
     uh = problem.solve()
     uh.name = "displacement"
+    results={uh.name:uh}
     energy = fem.assemble_scalar(fem.form(0.5 * a(uh, uh) - L(uh)))
-    print(f"The potential energy is {energy:2.3e}")
+    node_count=uh.x.array.size
+    print(f"The potential energy is {energy:2.3e}, "
+          f"node_count is {node_count}")
     if verbosity>0:
         fn="../paraview/newfrac-elasticity.xdmf"
         with dolfinx.io.XDMFFile(MPI.COMM_WORLD, fn, "w") as file:
@@ -238,10 +241,27 @@ def solve_elasticity(Lx = 1.,
             V_von_mises.element.interpolation_points())
         vm_stress = fem.Function(V_von_mises)
         vm_stress.interpolate(stress_expr)
+        max_stress=vm_stress.x.array.max()
+        #
+        target_percent=5
+        max_dim=max(Lx,Ly)
+        max_displacement=max(abs(uh.x.array.max()),
+                             abs(uh.x.array.min()))
+        factor=target_percent/100*max_dim/max_displacement
+        if uh.x.array.size>5000:
+            show_edges=False
+        else:
+            show_edges=True
+        results["stress"]=vm_stress
+        print(f"Max stress={max_stress:.3g} Pa")        
+        print(f"Max displacment={max_displacement:.3g} m, "
+              f"scale factor={factor:.2g}")        
         plotter = warp_plot_2d(uh,cell_field=vm_stress,
                             field_name="Von Mises stress",
-                            factor=.05,
-                            show_edges=True,
-                            clim=[0, 0.3])
+                            factor=factor,
+                            show_edges=show_edges,
+                            clim=[0, max_stress])
+        results["plotter"]=plotter
         if not pyvista.OFF_SCREEN:
             plotter.show()
+    return results

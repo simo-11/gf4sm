@@ -17,17 +17,17 @@ importlib.reload(newfrac)
 Lx = 1.
 Ly = 0.5
 Lcrack = 0.3
-lc =.05*Lx
+lc =.01*Lx
 dist_min = .1
 dist_max = .3
-E = 1. 
+E = 21.E10 
 nu = 0.3 
-load=(0,-10)
+load=(0,-600e3)
 #loadX=None
 loadX=(1-0.5)*Lx-0.5*lc
-refinement_ratio=3
+refinement_ratio=2
 # %% solve_elasticity with crack
-newfrac.solve_elasticity(Lx=Lx,
+crack_results=newfrac.solve_elasticity(Lx=Lx,
         Lcrack=Lcrack,
         Ly=Ly,
         lc=lc,  # characteristic length of the mesh
@@ -41,7 +41,7 @@ newfrac.solve_elasticity(Lx=Lx,
         verbosity=1
     )
 # %% solve_elasticity without crack
-newfrac.solve_elasticity(Lx=Lx,
+no_crack_results=newfrac.solve_elasticity(Lx=Lx,
         Lcrack=-1,
         Ly=Ly,
         lc=lc,  
