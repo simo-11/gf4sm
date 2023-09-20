@@ -17,11 +17,12 @@ importlib.reload(newfrac)
 Lx = 1.
 Ly = 0.5
 Lcrack = 0.3
-lc =.01*Lx
+lc =.02*Lx
 dist_min = .1
 dist_max = .3
 E = 21.E10 
-nu = 0.3 
+nu = 0.3
+degree=2
 load=(0,-600e3)
 #loadX=None
 loadX=(1-0.5)*Lx-0.5*lc
@@ -36,6 +37,7 @@ crack_results=newfrac.solve_elasticity(Lx=Lx,
         dist_max=dist_max,  # radius of the transition zone
         E=E,
         nu=nu,
+        degree=degree,
         load=load,
         loadX=loadX,
         verbosity=1
@@ -50,6 +52,7 @@ no_crack_results=newfrac.solve_elasticity(Lx=Lx,
         dist_max=dist_max,
         E=E,
         nu=nu,
+        degree=degree,
         load=load,
         loadX=loadX,
         verbosity=1

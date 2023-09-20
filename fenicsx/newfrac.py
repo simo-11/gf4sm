@@ -133,7 +133,11 @@ def warp_plot_2d(u,cell_field=None,
     grid = pyvista.UnstructuredGrid(topology, cell_types, geometry)
     # Attach vector values to grid and warp grid by vector
     values = np.zeros((geometry.shape[0], 3), dtype=np.float64)
-    values[:, :len(u)] = u.x.array.real.reshape((geometry.shape[0], len(u)))
+    try :
+        values[:, :len(u)] = u.x.array.real.reshape(
+            (geometry.shape[0], len(u)))
+    except ValueError as e:
+        print(f"cannot handle warping, {e}")
     grid["u"] = values
     warped_grid = grid.warp_by_vector("u", factor=factor)
     if cell_field is not None:
@@ -152,6 +156,7 @@ def solve_elasticity(Lx = 1.,
     refinement_ratio = 10,
     E=1,
     nu=0.3,
+    degree=1,
     load=None,
     loadX=None,
     verbosity =1):
@@ -164,7 +169,7 @@ def solve_elasticity(Lx = 1.,
         dist_max=dist_max,
         verbosity=verbosity
     )
-    element = ufl.VectorElement('Lagrange',msh.ufl_cell(),degree=1,dim=2)
+    element = ufl.VectorElement('Lagrange',msh.ufl_cell(),degree=degree,dim=2)
     V = fem.FunctionSpace(msh, element)
     bottom_no_crack_facets = mesh.locate_entities_boundary(
         msh, 1, lambda x : np.logical_and(np.isclose(x[1], 0.0), 
