@@ -10,7 +10,7 @@ from petsc4py.PETSc import ScalarType
 import pyvista
 from dolfinx import plot
 from dolfinx import io
-def run(order=1):
+def run(order=1,verbose=1):
     domain = mesh.create_unit_square(
         MPI.COMM_WORLD, 8, 8, mesh.CellType.quadrilateral)
     V = FunctionSpace(domain, ("CG", order))
@@ -32,6 +32,11 @@ def run(order=1):
         a, L, bcs=[bc], 
         petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
     uh = problem.solve()
+    max=uh.x.array.max()
+    min=uh.x.array.min()
+    print(f"max : {max:.2g}, min : {min:.2g}")   
+    if verbose<1:
+        return    
     V2 = fem.FunctionSpace(domain, ("CG", 2))
     uex = fem.Function(V2)
     uex.interpolate(lambda x: 1 + x[0]**2 + 2 * x[1]**2)
@@ -43,17 +48,19 @@ def run(order=1):
     if domain.comm.rank == 0:
         print(f"Error_L2 : {error_L2:.2e}")
         print(f"Error_max : {error_max:.2e}")
-    print(pyvista.global_theme.jupyter_backend)
+    if verbose<2:
+        return    
     pyvista.start_xvfb()
     topology, cell_types, geometry = plot.create_vtk_mesh(domain, tdim)
     grid = pyvista.UnstructuredGrid(topology, cell_types, geometry)
     plotter = pyvista.Plotter()
     plotter.add_mesh(grid, show_edges=True)
     plotter.view_xy()
-    if not pyvista.OFF_SCREEN:
-        plotter.show()
-    else:
-        figure = plotter.screenshot("fundamentals_mesh.png")
+    if verbose>2:
+        if not pyvista.OFF_SCREEN:
+            plotter.show()
+        else:
+            figure = plotter.screenshot("fundamentals_mesh.png")
     u_topology, u_cell_types, u_geometry = plot.create_vtk_mesh(V)
     u_grid = pyvista.UnstructuredGrid(u_topology, u_cell_types, u_geometry)
     u_grid.point_data["u"] = uh.x.array.real
@@ -61,21 +68,22 @@ def run(order=1):
     u_plotter = pyvista.Plotter()
     u_plotter.add_mesh(u_grid, show_edges=True)
     u_plotter.view_xy()
-    if not pyvista.OFF_SCREEN:
+    if not pyvista.OFF_SCREEN and verbose>2:
         u_plotter.show()
     warped = u_grid.warp_by_scalar()
     plotter2 = pyvista.Plotter()
     plotter2.add_mesh(warped, show_edges=False, show_scalar_bar=True)
-    if not pyvista.OFF_SCREEN:
+    if not pyvista.OFF_SCREEN and verbose>0:
         plotter2.show()
-    if dolfinx.cpp.common.has_adios2:
+    if dolfinx.cpp.common.has_adios2 and verbose>0:
         fn="../paraview/poisson.bp"   
         with io.VTXWriter(domain.comm, fn, [uh]) as vtx:
             vtx.write(0.0)
             print(f"Wrote {fn}")
-    fn="../paraview/poisson.xdmf"  
-    with io.XDMFFile(domain.comm, fn, "w") as xdmf:
-        xdmf.write_mesh(domain)
-        xdmf.write_function(uh)
-        print(f"Wrote {fn}")
+    if verbose>0:        
+        fn="../paraview/poisson.xdmf"  
+        with io.XDMFFile(domain.comm, fn, "w") as xdmf:
+            xdmf.write_mesh(domain)
+            xdmf.write_function(uh)
+            print(f"Wrote {fn}")
        
