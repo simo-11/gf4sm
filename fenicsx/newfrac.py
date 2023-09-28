@@ -123,7 +123,7 @@ def generate_mesh_with_crack(Lx = 1.,
             plotter.screenshot("mesh.png")
     return msh, mt    
 
-def warp_plot_2d(u,cell_field=None,
+def warp_plot_2d(u,cell_field=None,tutorial_style=False,
         field_name="Field",factor=1.,backend="none",**kwargs):
     #"ipyvtklink", "panel", "ipygany", "static", "pythreejs", "none"
     msh = u.function_space.mesh
@@ -131,19 +131,25 @@ def warp_plot_2d(u,cell_field=None,
     plotter = pyvista.Plotter()
     topology, cell_types, geometry = dolfinx.plot.create_vtk_mesh(msh)
     grid = pyvista.UnstructuredGrid(topology, cell_types, geometry)
-    # Attach vector values to grid and warp grid by vector
-    values = np.zeros((geometry.shape[0], 3), dtype=np.float64)
-    try :
-        values[:, :len(u)] = u.x.array.real.reshape(
-            (geometry.shape[0], len(u)))
-    except ValueError as e:
-        print(f"cannot handle warping, {e}")
-    grid["u"] = values
-    warped_grid = grid.warp_by_vector("u", factor=factor)
-    if cell_field is not None:
-        warped_grid.cell_data[field_name] = cell_field.vector.array
-        warped_grid.set_active_scalars(field_name)
-    plotter.add_mesh(warped_grid,**kwargs)
+    if tutorial_style:
+        grid.point_data["u"]=u.x.array.real
+        grid.set_active_vectors("u")
+        warped=grid.warp_by_vector()
+        plotter.add_mesh(warped)
+    else:
+        # Attach vector values to grid and warp grid by vector
+        values = np.zeros((geometry.shape[0], 3), dtype=np.float64)
+        try :
+            values[:, :len(u)] = u.x.array.real.reshape(
+                (geometry.shape[0], len(u)))
+        except ValueError as e:
+            print(f"cannot handle warping, {e}")
+        grid["u"] = values
+        warped_grid = grid.warp_by_vector("u", factor=factor)
+        if cell_field is not None:
+            warped_grid.cell_data[field_name] = cell_field.vector.array
+            warped_grid.set_active_scalars(field_name)
+        plotter.add_mesh(warped_grid,**kwargs)
     plotter.camera_position = 'xy'
     return plotter
 

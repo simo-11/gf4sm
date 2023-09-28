@@ -6,5 +6,5 @@ pyvista.set_jupyter_backend('client')
 # %% reload newfrac
 importlib.reload(poisson)
 # %%
-poisson.run()
+poisson.run(2)
 # %%

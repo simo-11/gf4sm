@@ -10,10 +10,10 @@ from petsc4py.PETSc import ScalarType
 import pyvista
 from dolfinx import plot
 from dolfinx import io
-def run():
+def run(order=1):
     domain = mesh.create_unit_square(
         MPI.COMM_WORLD, 8, 8, mesh.CellType.quadrilateral)
-    V = FunctionSpace(domain, ("CG", 1))
+    V = FunctionSpace(domain, ("CG", order))
     uD = fem.Function(V)
     uD.interpolate(lambda x: 1 + x[0]**2 + 2 * x[1]**2)
     # Create facet to cell connectivity required to determine boundary facets
@@ -65,7 +65,7 @@ def run():
         u_plotter.show()
     warped = u_grid.warp_by_scalar()
     plotter2 = pyvista.Plotter()
-    plotter2.add_mesh(warped, show_edges=True, show_scalar_bar=True)
+    plotter2.add_mesh(warped, show_edges=False, show_scalar_bar=True)
     if not pyvista.OFF_SCREEN:
         plotter2.show()
     if dolfinx.cpp.common.has_adios2:

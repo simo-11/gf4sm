@@ -17,7 +17,7 @@ importlib.reload(newfrac)
 Lx = 1.
 Ly = 0.5
 Lcrack = 0.3
-lc =.02*Lx
+lc =.3*Lx
 dist_min = .1
 dist_max = .3
 E = 21.E10 
