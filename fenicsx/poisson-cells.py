@@ -6,5 +6,7 @@ pyvista.set_jupyter_backend('client')
 # %% reload newfrac
 importlib.reload(poisson)
 # %%
-poisson.run(order=2,verbose=0)
+poisson.dirichlet(order=2,verbose=0)
+# %%
+poisson.dirichlet_and_neumann(order=1,verbose=3)
 # %%
