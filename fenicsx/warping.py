@@ -1,4 +1,5 @@
 # Initially based on https://jsdokken.com/dolfinx-tutorial/chapter1/fundamentals_code.html
+# target is to solve warping function
 # 
 import numpy as np
 import ufl
@@ -16,14 +17,19 @@ def main(order=1,h=0.1,w=0.1,nx=10,ny=10):
     F = ufl.inner(ufl.grad(u), ufl.grad(v)) * ufl.dx 
     x = ufl.SpatialCoordinate(domain)
     n = ufl.FacetNormal(domain)
+    atol_for_corner=max(h/ny,w/nx)
     boundaries = [(1, lambda x: np.isclose(x[0], 0)),
               (2, lambda x: np.isclose(x[0], w)),
               (3, lambda x: np.isclose(x[1], 0)),
-              (4, lambda x: np.isclose(x[1], h))]
+              (4, lambda x: np.isclose(x[1], h)),
+              (5, lambda x: np.isclose(x[0]+x[1], 0, atol=atol_for_corner))]
     facet_indices, facet_markers = [], []
     fdim = domain.topology.dim - 1
     for (marker, locator) in boundaries:
         facets = mesh.locate_entities(domain, fdim, locator)
+        if len(facets)<1:
+            raise ValueError(f"No facets found for marker {marker}"
+                             ", redefine boundaries")
         facet_indices.append(facets)
         facet_markers.append(np.full_like(facets, marker))
     facet_indices = np.hstack(facet_indices).astype(np.int32)
@@ -43,13 +49,12 @@ def main(order=1,h=0.1,w=0.1,nx=10,ny=10):
         def __init__(self, type, marker, values):
             self._type = type
             if type == "Dirichlet":
-                u_D = fem.Function(V)
-                u_D.interpolate(values)
+                u_D = fem.Constant(domain,ScalarType(values))
                 facets = facet_tag.find(marker)
-                dofs = mesh.locate_dofs_topological(V, fdim, facets)
+                dofs = fem.locate_dofs_topological(V, fdim, facets)
                 self._bc = fem.dirichletbc(u_D, dofs)
             elif type == "Neumann":
-                    self._bc = ufl.inner(values, v) * ds(marker)
+                self._bc = ufl.inner(values, v) * ds(marker)
             elif type == "Robin":
                 self._bc = values[0] * ufl.inner(u-values[1], v)* ds(marker)
             else:
@@ -61,10 +66,11 @@ def main(order=1,h=0.1,w=0.1,nx=10,ny=10):
         @property
         def type(self):
             return self._type    
-    boundary_conditions = [BoundaryCondition("Robin", 1, n),
-        BoundaryCondition("Robin", 2, n),
-        BoundaryCondition("Robin", 3, n),
-        BoundaryCondition("Robin", 4, n)] 
+    boundary_conditions = [BoundaryCondition("Neumann", 1, n),
+        BoundaryCondition("Neumann", 2, n),
+        BoundaryCondition("Neumann", 3, n),
+        BoundaryCondition("Neumann", 4, n),
+        BoundaryCondition("Dirichlet", 5, 0.)] 
     bcs = []
     for condition in boundary_conditions:
         if condition.type == "Dirichlet":

@@ -1,5 +1,5 @@
 # Initially based on https://jsdokken.com/dolfinx-tutorial/chapter2/linearelasticity_code.html
-# 
+# Various loading cases for solid prismatic rectangular beam.
 import numpy as np
 import ufl
 from mpi4py import MPI
