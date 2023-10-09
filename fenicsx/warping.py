@@ -49,10 +49,10 @@ def main(order=1,h=0.1,w=0.1,nx=10,ny=10):
         def __init__(self, type, marker, values):
             self._type = type
             if type == "Dirichlet":
-                u_D = fem.Constant(domain,ScalarType(values))
                 facets = facet_tag.find(marker)
                 dofs = fem.locate_dofs_topological(V, fdim, facets)
-                self._bc = fem.dirichletbc(u_D, dofs)
+                value=fem.Constant(domain,values)
+                self._bc = fem.dirichletbc(value, dofs)
             elif type == "Neumann":
                 self._bc = ufl.inner(values, v) * ds(marker)
             elif type == "Robin":

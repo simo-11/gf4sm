@@ -97,7 +97,7 @@ def dirichlet(order=1,verbose=1):
     if verbose>1:
         plot_results(domain,tdim,V,uh,"dirichlet",
                      verbose=verbose)
-        
+# https://jsdokken.com/dolfinx-tutorial/chapter3/neumann_dirichlet_code.html        
 def dirichlet_and_neumann(order=1,verbose=1):
     mesh = create_unit_square(MPI.COMM_WORLD, 10, 10)
     V = FunctionSpace(mesh, ("CG", 1))
