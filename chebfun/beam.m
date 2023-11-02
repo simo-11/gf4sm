@@ -17,11 +17,13 @@ ymax=q*l^4/(8*E*I);
 mmax=q*l^2/2;
 fprintf("Analytical:\nymax=%.2g\nmmax=%.2g\n",ymax,mmax);
 %% Solve using chebop
+tic
 L = chebop(0,l); % domain 0..L
 L.op = @(x,y) E*I*diff(y,4)-q; % Euler-Bernoulli
 L.lbc = [0;0]; % zero displacement and slope at fixed end
 L.rbc=@(y)[diff(y,2);diff(y,3)]; % zero moment and force at free end
 y = L\-1; % solve
+toc
 plot(y,CO,bvp,LW,3); 
 %axis([0 l -5e-3 0])
 ymax=y(l);
