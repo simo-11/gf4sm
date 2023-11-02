@@ -15,7 +15,8 @@ Most packages are using or can use
 | Simulation | deflection at tip [m] | Solve time [s]|
 |------------|-----------------------|----------------|
 |  | g/f | g/f |   
-| Beam theory | 0.0044| |
+| Beam theory  | 0.0044| |
+| Chebfun(matlab)  | 0.0044| 0.03|
 | b_1_9_3_3 | 0.0008/0.0008 | 0.05/0.11 | 
 | b_1_30_1_1 | 0.0028 | 0.1 | 
 | b_1_400_1_1 | 0.0038 | 0.1 | 
