@@ -74,6 +74,37 @@ toc
 ymax=(39+55*sqrt(33))*p.q*p.l^4/(65536*p.E*p.I);
 mmax=p.q*p.l^2/8;
 report_results(y,p,((15-sqrt(33))/16)*p.l,0,ymax,mmax)
+%% simply supported beam with asymmetric load
+% 
+p=parameters;
+rtol=0.011; % higher rtol is needed here unless better  is found
+p.version=5;
+P=p.q*p.l;
+a=0.8*p.l;
+b=p.l-a;
+fprintf("%s P=%.3g at %.3g %s, v%d\n",...
+        "Point load",P,a,...
+        "with simple supports", ...
+        p.version);
+tic
+dom = [0 p.l];
+N = chebop(@(x,u) p.E*p.I*diff(u,4), dom);
+N.bc = @(x,u) [u(0)
+u(p.l)    
+feval(diff(u,2),0)    
+feval(diff(u,2),p.l)    
+];
+dx=0.02;
+q=P/(2*dx);
+rhs = chebfun({@(x)0,q,0},[0 a-dx a+dx p.l]);
+figure(105)
+plot(rhs)
+y = solvebvp(N, rhs);
+toc
+x_for_max_d=sqrt((p.l^2-b^2)/3);
+ymax=sqrt(3)*P*b*(p.l^2-b^2)^(3/2)/(27*p.l*p.E*p.I);
+mmax=-P*a*b/p.l;
+report_results(y,p,x_for_max_d,a,ymax,mmax,rtol)
 %% local functions
 function p=parameters
     %% Set parameters
@@ -88,14 +119,24 @@ function p=parameters
     p.version=0;
 end
 function report_results(y,p,x_for_max_d,x_for_max_m,...
-    expected_ymax,expected_mmax)
+    expected_ymax,expected_mmax,rtol)
+    arguments
+       y
+       p
+       x_for_max_d
+       x_for_max_m
+       expected_ymax
+       expected_mmax
+       rtol=0.001
+    end
     import matlab.unittest.TestCase
     import matlab.unittest.constraints.IsEqualTo
     import matlab.unittest.constraints.RelativeTolerance
     ymax=y(x_for_max_d);
     M=p.E*p.I*diff(y,2);
     mmax=M(x_for_max_m);
-    fprintf("Case %d: ymax=%.3g mmax=%.3g\n",p.version,ymax,mmax);
+    fprintf("Case %d: ymax=%.3g(%.3g) mmax=%.3g(%.3g) rtol=%.2g%%\n",...
+        p.version,ymax,expected_ymax,mmax,expected_mmax,100*rtol);
     figure(10*p.version+1)
     plot(y)
     title_text=sprintf("v%d y(%.3g)=%.3g",p.version,x_for_max_d,ymax);
@@ -103,10 +144,15 @@ function report_results(y,p,x_for_max_d,x_for_max_m,...
     figure(10*p.version+2)
     plot(M)
     title_text=sprintf("v%d M(%.3g)=%.3g",p.version,x_for_max_m,mmax);
-    title(title_text)    
+    title(title_text)
+    Q=diff(M);
+    figure(10*p.version+3)
+    plot(Q)
+    title_text=sprintf("v%d Q",p.version);
+    title(title_text)
     testCase = TestCase.forInteractiveUse;
     testCase.verifyThat(ymax,IsEqualTo(expected_ymax, ...
-    "Within",RelativeTolerance(0.001)))
+    "Within",RelativeTolerance(rtol)))
     testCase.verifyThat(mmax,IsEqualTo(expected_mmax, ...
-    "Within",RelativeTolerance(0.001)))
+    "Within",RelativeTolerance(rtol)))
 end
