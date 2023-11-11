@@ -12,7 +12,7 @@ fprintf("Case %d: T=%.3g, clamped and free ends\n",...
         p.case,p.T);
 tic
 N = chebop(0,p.l);
-N.op = @(x,rx) p.G*p.It*diff(rx)+p.E*p.Iw*diff(rx,3); % 
+N.op = @(x,rx) p.G*p.It*diff(rx)-p.E*p.Iw*diff(rx,3); % 
 N.bc = @(x,rx) [rx(0)
 feval(diff(rx),0)
 feval(diff(rx,2),p.l)
@@ -24,7 +24,7 @@ if p.toc
 end
 rxmax=0.162;
 wmax=p.T/(p.G*p.It);
-report_results(rx,p,p.l,p.l,rxmax,wmax,0.01)
+report_results(rx,p,p.l,p.l,rxmax,wmax);
 %% check how well chebfun can describe solution for warping torsion
 p=parameters;
 p.case=2;
